@@ -1,3 +1,0 @@
-C:\Users\Сергей\Documents\Visual Studio 2013\Projects\rainmeter-plugin-sdk-master\StockQuotes\x64\Release\StockQuotes.dll
-C:\Users\Сергей\Documents\Visual Studio 2013\Projects\rainmeter-plugin-sdk-master\StockQuotes\obj\x64\Release\StockQuotes.csprojResolveAssemblyReference.cache
-C:\Users\Сергей\Documents\Visual Studio 2013\Projects\rainmeter-plugin-sdk-master\StockQuotes\obj\x64\Release\StockQuotes.dll
