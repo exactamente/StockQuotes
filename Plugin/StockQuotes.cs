@@ -156,6 +156,7 @@ namespace StockQuotes
 		internal bool ParseData(string parseString, string source)
 		{
 			string pattern = "";
+			
 
 			if (string.Compare(source, "moex", true) == 0)
 			{
@@ -179,7 +180,7 @@ namespace StockQuotes
 
 			string sVal = "";
 			double dVal;
-
+			count = 0;
 			for (m = r.Match(parseString); m.Success; m = m.NextMatch())
 			{
 				try
