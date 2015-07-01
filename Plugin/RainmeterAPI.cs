@@ -18,6 +18,7 @@
 
 using System;
 using System.Runtime.InteropServices;
+//#define RELEASE
 
 namespace Rainmeter
 {

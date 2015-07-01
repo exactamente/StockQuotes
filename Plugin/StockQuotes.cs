@@ -1,4 +1,4 @@
-﻿#define DEBUG
+﻿//#define DEBUG
 
 using Rainmeter;
 using System;
@@ -202,7 +202,7 @@ namespace StockQuotes
 	//		Match m;
 
 	//		double dVal;
-			
+
 	//		for (m = r.Match(quotes); m.Success; m = m.NextMatch())
 	//		{
 	//			try
@@ -286,7 +286,7 @@ namespace StockQuotes
 		internal int Width, Height;
 		internal string ImageAddress;
 
-		internal string CustomRegEx;
+		//internal string CustomRegEx;
 		internal int ReverseOrder;
 		#endregion
 
@@ -339,7 +339,7 @@ namespace StockQuotes
 			Height = api.ReadInt("H", 300);
 
 			ImageAddress = api.ReadString("ImageAddress", "") + @"\" + Name + ".png";
-			
+
 			ReverseOrder = api.ReadInt("ReverseOrder", 1);
 
 			Outdated = false;
@@ -371,36 +371,15 @@ namespace StockQuotes
 
 			if (string.Compare(source, "moex", true) == 0)
 			{
-				//ToDay = nowDate.Day;
-				//ToMonth = nowDate.Month;
-				//ToYear = nowDate.Year;
-				//FromDay = nowDate.AddMonths(-1).Day;
-				//FromMonth = nowDate.AddMonths(-1).Month;
-				//FromYear = nowDate.AddMonths(-1).Year;
-
-				//url = "http://moex.com/iss/history/engines/stock/markets/index/securities/" +
-				//	Ticker +
-				//	".xml?iss.only=history&iss.json=extended&callback=JSON_CALLBACK" +
-				//	"&from=" + FromYear + "-" + FromMonth + "-" + FromDay +
-				//	"&till=" + ToYear + "-" + ToMonth + "-" + ToDay +
-				//	"&limit=100&start=0&sort_order=TRADEDATE&sort_order_desc=desc";
 				url = "http://www.moex.com/iss/history/engines/stock/markets/shares/boards/TQBR/securities/" +
 					Ticker +
 					".csv" +
 					"?from=" + FromYear + "-" + FromMonth + "-" + FromDay +
 					"&till=" + ToYear + "-" + ToMonth + "-" + ToDay +
 					"&lang=RU";
-			//http://www.moex.com/iss/history/engines/stock/markets/shares/boards/TQBR/securities/GAZP.csv?from=2015-06-25&till=2015-06-25&lang=RU
 			}
 			else if (string.Compare(source, "yahoo", true) == 0)
 			{
-				//ToDay = nowDate.Day;
-				//ToMonth = nowDate.Month;
-				//ToYear = nowDate.Year;
-				//FromDay = nowDate.AddMonths(-1).Day;
-				//FromMonth = nowDate.AddMonths(-1).Month;
-				//FromYear = nowDate.AddMonths(-1).Year;
-
 				url = "http://ichart.yahoo.com/table.csv?s=" +
 					Ticker +
 					"&a=" + (FromMonth - 1) + "&b=" + FromDay + "&c=" + FromYear +
@@ -408,14 +387,7 @@ namespace StockQuotes
 					"&g=d&ignore=.csv";
 			}
 			else if (string.Compare(source, "finam", true) == 0)
-			{				
-				//ToDay = nowDate.Day;
-				//ToMonth = nowDate.Month;
-				//ToYear = nowDate.Year;
-				//FromDay = nowDate.AddMonths(-1).Day;
-				//FromMonth = nowDate.AddMonths(-1).Month;
-				//FromYear = nowDate.AddMonths(-1).Year;
-
+			{
 				url = "http://195.128.78.52/" + Ticker + ".csv?" +
 					"market=" + Finam.GetMarketId(Ticker) +
 					"&em=" + Finam.GetId(Ticker) +
@@ -435,7 +407,7 @@ namespace StockQuotes
 			}
 			else
 			{
-				API.Log(API.LogType.Debug, "StockQuotes.dll: Source \"" + Source + "\" is not valid.");
+				API.Log(API.LogType.Error, "StockQuotes.dll: Source \"" + Source + "\" is not valid.");
 				url = string.Empty;
 			}
 #if DEBUG
@@ -474,8 +446,107 @@ namespace StockQuotes
 			return Color.Empty;
 		}
 
-		// just parsing values from the string we got with GetQuotes()
 		internal bool ParseData(string parseString, string source)
+		{
+			ValueClose.Clear();
+			ValueOpen.Clear();
+			ValueHigh.Clear();
+			ValueLow.Clear();
+
+			Count = 0;
+
+			// index of column with corresponding data
+			int OpenIdx = 0;
+			int CloseIdx = 0;
+			int HighIdx = 0;
+			int LowIdx = 0;
+
+			string[] separator = { ";" };
+			//System.Globalization.NumberFormatInfo nfi = new System.Globalization.CultureInfo("en-US", false).NumberFormat;
+			//nfi.NumberDecimalSeparator = ".";
+
+			if (string.Compare(source, "moex", true) == 0)
+			{
+				//0      ;1        ;2        ;3    ;4        ;5    ;6   ;7  ;8   ;9
+				//BOARDID;TRADEDATE;SHORTNAME;SECID;NUMTRADES;VALUE;OPEN;LOW;HIGH;LEGALCLOSEPRICE
+				OpenIdx = 6;
+				CloseIdx = 9;
+				HighIdx = 8;
+				LowIdx = 7;
+
+				separator[0] = ";";
+			}
+			else if (string.Compare(source, "yahoo", true) == 0)
+			{
+				//0   ;1   ;2   ;3  ;4    ;5     ;6
+				//Date,Open,High,Low,Close,Volume,Adj Close
+				OpenIdx = 1;
+				CloseIdx = 4;
+				HighIdx = 2;
+				LowIdx = 3;
+
+				separator[0] = ",";
+			}
+			else if (string.Compare(source, "finam", true) == 0)
+			{
+				//0     ;1     ;2     ;3     ;4    ;5      ;6
+				//<DATE>,<TIME>,<OPEN>,<HIGH>,<LOW>,<CLOSE>,<VOL>
+				OpenIdx = 2;
+				CloseIdx = 5;
+				HighIdx = 3;
+				LowIdx = 4;
+
+				separator[0] = ",";
+			}
+			
+			
+
+			using (TextReader csvFile = new StringReader(parseString))
+			{
+				// skip header
+				string line = csvFile.ReadLine();
+				if (string.Compare(source, "moex", true) == 0)
+				{
+					line = csvFile.ReadLine();
+					line = csvFile.ReadLine();
+				}
+
+				while ((line = csvFile.ReadLine()) != null)
+				{
+					string[] attr = line.Split(separator, StringSplitOptions.None);
+					try
+					{
+						ValueOpen.Add(Double.Parse(attr[OpenIdx], System.Globalization.CultureInfo.InvariantCulture));
+						ValueLow.Add(Double.Parse(attr[LowIdx], System.Globalization.CultureInfo.InvariantCulture));
+						ValueHigh.Add(Double.Parse(attr[HighIdx], System.Globalization.CultureInfo.InvariantCulture));
+						ValueClose.Add(Double.Parse(attr[CloseIdx], System.Globalization.CultureInfo.InvariantCulture));
+						Count++;
+
+#if DEBUG
+						API.Log(API.LogType.Debug, "StockQuotes: " + Ticker + " Open = " + Double.Parse(attr[OpenIdx], System.Globalization.CultureInfo.InvariantCulture));
+						API.Log(API.LogType.Debug, "StockQuotes: " + Ticker + " Close = " + Double.Parse(attr[CloseIdx], System.Globalization.CultureInfo.InvariantCulture));
+						API.Log(API.LogType.Debug, "StockQuotes: " + Ticker + " High = " + Double.Parse(attr[HighIdx], System.Globalization.CultureInfo.InvariantCulture));
+						API.Log(API.LogType.Debug, "StockQuotes: " + Ticker + " Low = " + Double.Parse(attr[LowIdx], System.Globalization.CultureInfo.InvariantCulture));
+						API.Log(API.LogType.Debug, "StockQuotes: Count = " + Count);
+#endif
+					}
+					catch (Exception e)
+					{
+						API.Log(API.LogType.Warning, "StockQuotes.dll: Double.Parse exception: " + e.Message);
+						//return false;
+					}
+				}
+				if (Count == 0)
+				{
+					API.Log(API.LogType.Warning, "StockQuotes.dll: (" + Ticker + ") Parser cant find matches");
+					return false;
+				}
+			}
+			return true;
+		}
+
+		// just parsing values from the string we got with GetQuotes()
+		internal bool ParseDataOld(string parseString, string source)
 		{
 			string pattern = string.Empty;
 			ValueClose.Clear();
@@ -487,10 +558,9 @@ namespace StockQuotes
 			if (string.Compare(source, "moex", true) == 0)
 			{
 				//pattern = "CLOSE=\"(?<1>\\S+)\"\\s*" + "OPEN=\"(?<2>\\S+)\"\\s*" + "HIGH=\"(?<3>\\S+)\"\\s*" + "LOW=\"(?<4>\\S+)\"\\s*";
-				pattern = @"\w*;\d{4}-\d{2}-\d{2};\S*\s*\S*;\S+;\d*;\d*;(?<2>\d*\.?\d*);(?<4>\d*\.?\d*);(?<3>\d*\.?\d*);(?<1>\d*\.?\d*)";
+				pattern = @"\w*;\d{4}-\d{2}-\d{2};\S*\s*\S*;\S+;\d*;\d*\.?\d*;(?<2>\d*\.?\d*);(?<4>\d*\.?\d*);(?<3>\d*\.?\d*);(?<1>\d*\.?\d*)";
 			}
-			else
-			if (string.Compare(source, "yahoo", true) == 0)
+			else if (string.Compare(source, "yahoo", true) == 0)
 			{
 				pattern = @"\d*-\d*-\d*,(?<2>\d*\.\d*),(?<3>\d*\.\d*),(?<4>\d*\.\d*),(?<1>\d*\.\d*)\s*";
 			}
@@ -498,10 +568,6 @@ namespace StockQuotes
 			{
 				pattern = @"\d*,\d*,(?<2>\d*\.?\d*\.\d{7}),(?<3>\d*\.?\d*\.\d{7}),(?<4>\d*\.?\d*\.\d{7}),(?<1>\d*\.?\d*\.\d{7}),\s*";
 			}
-			//else if (string.Compare(source, "custom", true) == 0)
-			//{
-			//	pattern = CustomRegEx;
-			//}
 
 			Regex r = new Regex(pattern, RegexOptions.IgnoreCase | RegexOptions.Compiled);
 			Match m;
@@ -514,50 +580,49 @@ namespace StockQuotes
 				try
 				{
 					sVal = m.Groups[1].ToString();
-					//if (sVal.Length > 12)
-					//{
-					//	sVal = sVal.Remove(sVal.Length - 12, 1);
-					//}
 					dVal = Double.Parse(sVal, System.Globalization.CultureInfo.InvariantCulture);
+#if DEBUG
+					API.Log(API.LogType.Debug, "StockQuotes: " + Ticker + " dVal = " + dVal);
+#endif
 					ValueClose.Add(dVal);
 
 					sVal = m.Groups[2].ToString();
-					//if (sVal.Length > 12)
-					//{
-					//	sVal = sVal.Remove(sVal.Length - 12, 1);
-					//}
 					dVal = Double.Parse(sVal, System.Globalization.CultureInfo.InvariantCulture);
+#if DEBUG
+					API.Log(API.LogType.Debug, "StockQuotes: " + Ticker + " dVal = " + dVal);
+#endif
 					ValueOpen.Add(dVal);
 
 					sVal = m.Groups[3].ToString();
-					//if (sVal.Length > 12)
-					//{
-					//	sVal = sVal.Remove(sVal.Length - 12, 1);
-					//}
 					dVal = Double.Parse(sVal, System.Globalization.CultureInfo.InvariantCulture);
+#if DEBUG
+					API.Log(API.LogType.Debug, "StockQuotes: " + Ticker + " dVal = " + dVal);
+#endif
 					ValueHigh.Add(dVal);
 
 					sVal = m.Groups[4].ToString();
-					//if (sVal.Length > 12)
-					//{
-					//	sVal = sVal.Remove(sVal.Length - 12, 1);
-					//}
 					dVal = Double.Parse(sVal, System.Globalization.CultureInfo.InvariantCulture);
+#if DEBUG
+					API.Log(API.LogType.Debug, "StockQuotes: " + Ticker + " dVal = " + dVal);
+#endif
 					ValueLow.Add(dVal);
 
 					// number of given values for each keyword
 					Count++;
+#if DEBUG
+					API.Log(API.LogType.Debug, "StockQuotes: Count = " + Count);
+#endif
 				}
 				catch (Exception e)
 				{
 					Count = 0;
-					API.Log(API.LogType.Debug, "StockQuotes.dll: (" + Ticker + ") Parser exception: " + e.Message);
+					API.Log(API.LogType.Error, "StockQuotes.dll: (" + Ticker + ") Parser exception: " + e.Message);
 					return false;
 				}
 			}
 			if (Count == 0)
 			{
-				API.Log(API.LogType.Debug, "StockQuotes.dll: (" + Ticker + ") Parser cant find matches");
+				API.Log(API.LogType.Warning, "StockQuotes.dll: (" + Ticker + ") Parser cant find matches");
 				return false;
 			}
 			return true;
@@ -566,8 +631,6 @@ namespace StockQuotes
 		// scaling listed values to pixel-size of candlesticks
 		internal void Scale()
 		{
-			//API.Log(API.LogType.Debug, "StockQuotes.dll: Scale");
-
 			ScaledOpen.Clear();
 			ScaledClose.Clear();
 			ScaledHigh.Clear();
@@ -585,6 +648,10 @@ namespace StockQuotes
 			{
 				if (val > maxVal) maxVal = val;
 			}
+#if DEBUG
+			API.Log(API.LogType.Debug, "StockQuotes: " + Ticker + " minVal = " + minVal);
+			API.Log(API.LogType.Debug, "StockQuotes: " + Ticker + " maxVal = " + maxVal);
+#endif
 
 			double k = Convert.ToDouble(Height) / (maxVal - minVal);
 
@@ -607,6 +674,12 @@ namespace StockQuotes
 			{
 				ScaledLow.Add(Convert.ToInt32((val - minVal) * k));
 			}
+#if DEBUG
+			API.Log(API.LogType.Debug, "StockQuotes: " + Ticker + " ScaledOpen = " + ScaledOpen.Count);
+			API.Log(API.LogType.Debug, "StockQuotes: " + Ticker + " ScaledClose = " + ScaledClose.Count);
+			API.Log(API.LogType.Debug, "StockQuotes: " + Ticker + " ScaledHigh = " + ScaledHigh.Count);
+			API.Log(API.LogType.Debug, "StockQuotes: " + Ticker + " ScaledLow = " + ScaledLow.Count);
+#endif
 		}
 
 		// downloading Url
@@ -621,7 +694,7 @@ namespace StockQuotes
 				}
 				catch (Exception e)
 				{
-					API.Log(API.LogType.Debug, "StockQuotes.dll: WebClient exception: " + e.Message);
+					API.Log(API.LogType.Error, "StockQuotes.dll: WebClient exception: " + e.Message);
 				}
 				finally
 				{
@@ -660,7 +733,7 @@ namespace StockQuotes
 			}
 			catch (Exception e)
 			{
-				API.Log(API.LogType.Debug, "StockQuotes.dll: MarkOutdated exception: " + e.ToString());
+				API.Log(API.LogType.Error, "StockQuotes.dll: MarkOutdated exception: " + e.ToString());
 			}
 
 		}
@@ -668,9 +741,6 @@ namespace StockQuotes
 		// drawing a graph, makes a picture and returns its full name
 		internal void DrawGraph()
 		{
-			//API.Log(API.LogType.Debug, "StockQuotes.dll: DrawGraph");
-
-
 			int _width = 0;
 			if (Count != 0)
 			{
@@ -699,7 +769,6 @@ namespace StockQuotes
 
 				for (int index = 0; index < Count; index++)
 				{
-					//Image img = new Bitmap(_width, _height);
 					using (Image img = new Bitmap(_width, _height))
 					{
 						Graphics singleGraphics = Graphics.FromImage(img);
@@ -724,7 +793,6 @@ namespace StockQuotes
 							if (p2.Y == 0) p2.Y = 1;
 							singleGraphics.DrawRectangle(pen, p1.X, p1.Y, p2.X, p2.Y);
 							singleGraphics.FillRectangle(brush, p1.X + 1, p1.Y + 1, p2.X - 1, p2.Y - 1);
-							//API.Log(API.LogType.Debug, "StockQuotes.dll: Rect draw");
 						}
 						else
 						{
@@ -745,7 +813,6 @@ namespace StockQuotes
 							if (p2.Y == 0) p2.Y = 1;
 							singleGraphics.DrawRectangle(pen, p1.X, p1.Y, p2.X, p2.Y);
 							singleGraphics.FillRectangle(brush, p1.X + 1, p1.Y + 1, p2.X - 1, p2.Y - 1);
-							//API.Log(API.LogType.Debug, "StockQuotes.dll: Rect draw");
 						}
 						if (ReverseOrder != 0)
 						{
@@ -763,15 +830,13 @@ namespace StockQuotes
 				graphics.Dispose();
 			}
 			pen.Dispose();
-
-			//API.Log(API.LogType.Debug, "StockQuotes.dll: DrawGraph = " + imageAddress);
 		}
 
-		// just get rest lol
-		internal void GetValue()
-		{
-			return;
-		}
+		//// just get rest
+		//internal void GetValue()
+		//{
+		//	return;
+		//}
 
 		// updating the measure - download and parse new values, redraw an imge with graph
 		internal double Update()

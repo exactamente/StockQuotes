@@ -11,3 +11,6 @@ using System.Runtime.CompilerServices;
 [assembly: AssemblyInformationalVersion("3.0.2.2161 (32-bit)")]
 #endif
 [assembly: AssemblyProduct("Rainmeter")]
+
+[assembly: InternalsVisibleTo("Test")]
+[assembly: AssemblyTitleAttribute("StockQuotes")]
