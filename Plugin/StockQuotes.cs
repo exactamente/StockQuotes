@@ -11,250 +11,248 @@ using System.Text.RegularExpressions;
 
 namespace StockQuotes
 {
-	//internal abstract class Stock
-	//{
-	//	internal string Ticker { get; set; }
+//	internal abstract class Stock
+//	{
+//		internal string Ticker { get; set; }
 
-	//	//internal DateTime nowDate = DateTime.Now;
-	//	internal int FromDay, FromMonth, FromYear;
-	//	internal int ToDay, ToMonth, ToYear;
+//		//internal DateTime nowDate = DateTime.Now;
+//		internal int FromDay, FromMonth, FromYear;
+//		internal int ToDay, ToMonth, ToYear;
 
-	//	internal List<double> ValueOpen = new List<double>();
-	//	internal List<double> ValueClose = new List<double>();
-	//	internal List<double> ValueHigh = new List<double>();
-	//	internal List<double> ValueLow = new List<double>();
+//		internal List<double> ValueOpen = new List<double>();
+//		internal List<double> ValueClose = new List<double>();
+//		internal List<double> ValueHigh = new List<double>();
+//		internal List<double> ValueLow = new List<double>();
 
-	//	internal List<int> ScaledOpen = new List<int>();
-	//	internal List<int> ScaledClose = new List<int>();
-	//	internal List<int> ScaledHigh = new List<int>();
-	//	internal List<int> ScaledLow = new List<int>();
+//		internal List<int> ScaledOpen = new List<int>();
+//		internal List<int> ScaledClose = new List<int>();
+//		internal List<int> ScaledHigh = new List<int>();
+//		internal List<int> ScaledLow = new List<int>();
 
-	//	private string GetQuotes(string url)
-	//	{
-	//		string result = string.Empty;
-	//		using (var client = new WebClient())
-	//		{
-	//			try
-	//			{
-	//				result = client.DownloadString(url);
-	//			}
-	//			catch (Exception e)
-	//			{
-	//				API.Log(API.LogType.Debug, "StockQuotes.dll: WebClient exception: " + e.Message);
-	//			}
-	//			//finally
-	//			//{
-	//			//	// save downloaded data to txt
-	//			//	using (FileStream fs = new FileStream(ImageAddress + ".txt", FileMode.Create))
-	//			//	{
-	//			//		byte[] buffer = new byte[result.Length * sizeof(char)];
-	//			//		System.Buffer.BlockCopy(result.ToCharArray(), 0, buffer, 0, buffer.Length);
-	//			//		fs.Write(buffer, 0, buffer.Length);
-	//			//	}
-	//			//}
-	//		}
-	//		return result;
-	//	}
+//		private string GetQuotes(string url)
+//		{
+//			string result = string.Empty;
+//			using (var client = new WebClient())
+//			{
+//				try
+//				{
+//					result = client.DownloadString(url);
+//				}
+//				catch (Exception e)
+//				{
+//					API.Log(API.LogType.Debug, "StockQuotes.dll: WebClient exception: " + e.Message);
+//				}
+////#if DEBUG
+////				finally
+////				{
+////					// save downloaded data to txt
+////					using (FileStream fs = new FileStream(ImageAddress + ".txt", FileMode.Create))
+////					{
+////						byte[] buffer = new byte[result.Length * sizeof(char)];
+////						System.Buffer.BlockCopy(result.ToCharArray(), 0, buffer, 0, buffer.Length);
+////						fs.Write(buffer, 0, buffer.Length);
+////					}
+////				}
+////#endif
+//			}
+//			return result;
+//		}
 
-	//	internal Stock()
-	//	{
+//		internal Stock()
+//		{
 
-	//	}
+//		}
 
-	//	internal Stock(string ticker)
-	//	{
+//		internal Stock(string ticker)
+//		{
 
-	//	}
+//		}
 
-	//	private abstract bool ParseQuotes(string quotes)
-	//	{
-	//		return false;
-	//	}
+//		private abstract bool ParseQuotes(string quotes)
+//		{
+//			return false;
+//		}
 
-	//	internal void GetValues()
-	//	{
-	//		ToDay = DateTime.Now.Day;
-	//		ToMonth = DateTime.Now.Month;
-	//		ToYear = DateTime.Now.Year;
-	//		FromDay = DateTime.Now.Day;
-	//		FromMonth = DateTime.Now.AddMonths(-1).Month;
-	//		FromYear = DateTime.Now.Year;
+//		internal void GetValues()
+//		{
+//			ToDay = DateTime.Now.Day;
+//			ToMonth = DateTime.Now.Month;
+//			ToYear = DateTime.Now.Year;
+//			FromDay = DateTime.Now.Day;
+//			FromMonth = DateTime.Now.AddMonths(-1).Month;
+//			FromYear = DateTime.Now.Year;
 
-	//		string url = this.BuildUrl();
+//			string url = this.BuildUrl();
 
-	//		string webQuotes = this.GetQuotes(url);
+//			string webQuotes = this.GetQuotes(url);
 
-	//		ParseQuotes(webQuotes);
+//			ParseQuotes(webQuotes);
 
-	//		Scale();
-	//	}
+//			Scale();
+//		}
 
-	//	private abstract string BuildUrl()
-	//	{
-	//		return null;
-	//	}
-
+//		private abstract string BuildUrl();
 
 
-	//	private void Scale()
-	//	{
-	//		ScaledOpen.Clear();
-	//		ScaledClose.Clear();
-	//		ScaledHigh.Clear();
-	//		ScaledLow.Clear();
+//		private void Scale()
+//		{
+//			ScaledOpen.Clear();
+//			ScaledClose.Clear();
+//			ScaledHigh.Clear();
+//			ScaledLow.Clear();
 
-	//		double maxVal = Double.MinValue;
-	//		double minVal = Double.MaxValue;
+//			double maxVal = Double.MinValue;
+//			double minVal = Double.MaxValue;
 
-	//		foreach (double val in ValueLow)
-	//		{
-	//			if (val < minVal) minVal = val;
-	//		}
+//			foreach (double val in ValueLow)
+//			{
+//				if (val < minVal) minVal = val;
+//			}
 
-	//		foreach (double val in ValueHigh)
-	//		{
-	//			if (val > maxVal) maxVal = val;
-	//		}
+//			foreach (double val in ValueHigh)
+//			{
+//				if (val > maxVal) maxVal = val;
+//			}
 
-	//		double k = Convert.ToDouble(Height) / (maxVal - minVal);
+//			double k = Convert.ToDouble(Height) / (maxVal - minVal);
 
-	//		foreach (double val in ValueOpen)
-	//		{
-	//			ScaledOpen.Add(Convert.ToInt32((val - minVal) * k));
-	//		}
+//			foreach (double val in ValueOpen)
+//			{
+//				ScaledOpen.Add(Convert.ToInt32((val - minVal) * k));
+//			}
 
-	//		foreach (double val in ValueClose)
-	//		{
-	//			ScaledClose.Add(Convert.ToInt32((val - minVal) * k));
-	//		}
+//			foreach (double val in ValueClose)
+//			{
+//				ScaledClose.Add(Convert.ToInt32((val - minVal) * k));
+//			}
 
-	//		foreach (double val in ValueHigh)
-	//		{
-	//			ScaledHigh.Add(Convert.ToInt32((val - minVal) * k));
-	//		}
+//			foreach (double val in ValueHigh)
+//			{
+//				ScaledHigh.Add(Convert.ToInt32((val - minVal) * k));
+//			}
 
-	//		foreach (double val in ValueLow)
-	//		{
-	//			ScaledLow.Add(Convert.ToInt32((val - minVal) * k));
-	//		}
-	//	}
-	//}
+//			foreach (double val in ValueLow)
+//			{
+//				ScaledLow.Add(Convert.ToInt32((val - minVal) * k));
+//			}
+//		}
+//	}
 
-	//internal class StockFinam : Stock
-	//{
-	//	internal int Id { get; set; }
-	//	internal int MarketId { get; set; }
-	//	internal StockFinam(string ticker)
-	//	{
-	//		Ticker = ticker;
-	//		Id = Finam.GetId(ticker);
-	//		MarketId = Finam.GetMarketId(ticker);
-	//	}
+//	internal class StockFinam : Stock
+//	{
+//		internal int Id { get; set; }
+//		internal int MarketId { get; set; }
+//		internal StockFinam(string ticker)
+//		{
+//			Ticker = ticker;
+//			Id = Finam.GetId(ticker);
+//			MarketId = Finam.GetMarketId(ticker);
+//		}
 
-	//	internal override string BuildUrl()
-	//	{
-	//		string result = "http://195.128.78.52/" + Ticker + ".csv?" +
-	//				"market=" + MarketId +
-	//				"&em=" + Id +
-	//				"&code=" + Ticker +
-	//				"&df=" + FromDay +
-	//				"&mf=" + (FromMonth - 1) +
-	//				"&yf=" + FromYear +
-	//				"&from=" + FromDay + "." + FromMonth + "." + FromYear +
-	//				"&dt=" + ToDay +
-	//				"&mt=" + (ToMonth - 1) +
-	//				"&yt=" + ToYear +
-	//				"&to=" + ToDay + "." + ToMonth + "." + ToYear +
-	//				"&p=8" + // period: 8 for one-day ticks
-	//				"&f=" + Ticker + "&e=.csv" +
-	//				"&cn=" + Ticker +
-	//				"&dtf=1&tmf=1&MSOR=1&mstime=on&mstimever=1&sep=1&sep2=2&datf=5&at=1";
-	//		//result = String.Format("http://195.128.78.52/" + "{0}.{1}?d=d&market={2}&em={3}&p={4}&df={5}&mf={6}&yf={7}&dt={8}&mt={9}&yt={10}&f={11}&e=.{12}&datf={13}&cn={14}&dtf=1&tmf=1&MSOR=0&sep=3&sep2=1&at=1",
-	//		//	Ticker,					// 0
-	//		//	"csv",					// 1
-	//		//	MarketId,				// 2
-	//		//	Id,						// 3
-	//		//	1,//settings.period,	// 4
-	//		//	FromDay,				// 5
-	//		//	FromMonth - 1,			// 6
-	//		//	FromYear,				// 7
-	//		//	ToDay,					// 8
-	//		//	ToMonth - 1,			// 9
-	//		//	ToYear,					// 10
-	//		//	Ticker,					// 11
-	//		//	"csv",					// 12
-	//		//	11,//format, if (settings.period == 1) format = 11; else format = 5;
-	//		//	Ticker					// 14
-	//		//	);
-	//		return result;
-	//	}
+//		internal override string BuildUrl()
+//		{
+//			string result = "http://195.128.78.52/" + Ticker + ".csv?" +
+//					"market=" + MarketId +
+//					"&em=" + Id +
+//					"&code=" + Ticker +
+//					"&df=" + FromDay +
+//					"&mf=" + (FromMonth - 1) +
+//					"&yf=" + FromYear +
+//					"&from=" + FromDay + "." + FromMonth + "." + FromYear +
+//					"&dt=" + ToDay +
+//					"&mt=" + (ToMonth - 1) +
+//					"&yt=" + ToYear +
+//					"&to=" + ToDay + "." + ToMonth + "." + ToYear +
+//					"&p=8" + // period: 8 for one-day ticks
+//					"&f=" + Ticker + "&e=.csv" +
+//					"&cn=" + Ticker +
+//					"&dtf=1&tmf=1&MSOR=1&mstime=on&mstimever=1&sep=1&sep2=2&datf=5&at=1";
+//			//result = String.Format("http://195.128.78.52/" + "{0}.{1}?d=d&market={2}&em={3}&p={4}&df={5}&mf={6}&yf={7}&dt={8}&mt={9}&yt={10}&f={11}&e=.{12}&datf={13}&cn={14}&dtf=1&tmf=1&MSOR=0&sep=3&sep2=1&at=1",
+//			//	Ticker,					// 0
+//			//	"csv",					// 1
+//			//	MarketId,				// 2
+//			//	Id,						// 3
+//			//	1,//settings.period,	// 4
+//			//	FromDay,				// 5
+//			//	FromMonth - 1,			// 6
+//			//	FromYear,				// 7
+//			//	ToDay,					// 8
+//			//	ToMonth - 1,			// 9
+//			//	ToYear,					// 10
+//			//	Ticker,					// 11
+//			//	"csv",					// 12
+//			//	11,//format, if (settings.period == 1) format = 11; else format = 5;
+//			//	Ticker					// 14
+//			//	);
+//			return result;
+//		}
 
-	//	private override bool ParseQuotes(string quotes)
-	//	{
-	//		string pattern = "\\d*,\\d*,(?<2>\\d*\\.\\d*),(?<3>\\d*\\.\\d*),(?<4>\\d*\\.\\d*),(?<1>\\d*\\.\\d*),\\S+";
-	//		ValueClose.Clear();
-	//		ValueOpen.Clear();
-	//		ValueHigh.Clear();
-	//		ValueLow.Clear();
-	//		//Outdated = false;
+//		private override bool ParseQuotes(string quotes)
+//		{
+//			string pattern = "\\d*,\\d*,(?<2>\\d*\\.\\d*),(?<3>\\d*\\.\\d*),(?<4>\\d*\\.\\d*),(?<1>\\d*\\.\\d*),\\S+";
+//			ValueClose.Clear();
+//			ValueOpen.Clear();
+//			ValueHigh.Clear();
+//			ValueLow.Clear();
+//			//Outdated = false;
 
-	//		Regex r = new Regex(pattern, RegexOptions.IgnoreCase | RegexOptions.Compiled);
-	//		Match m;
+//			Regex r = new Regex(pattern, RegexOptions.IgnoreCase | RegexOptions.Compiled);
+//			Match m;
 
-	//		double dVal;
+//			double dVal;
 
-	//		for (m = r.Match(quotes); m.Success; m = m.NextMatch())
-	//		{
-	//			try
-	//			{
-	//				dVal = Double.Parse(m.Groups[1].ToString(), System.Globalization.CultureInfo.InvariantCulture);
-	//				ValueClose.Add(dVal);
+//			for (m = r.Match(quotes); m.Success; m = m.NextMatch())
+//			{
+//				try
+//				{
+//					dVal = Double.Parse(m.Groups[1].ToString(), System.Globalization.CultureInfo.InvariantCulture);
+//					ValueClose.Add(dVal);
 
-	//				dVal = Double.Parse(m.Groups[2].ToString(), System.Globalization.CultureInfo.InvariantCulture);
-	//				ValueOpen.Add(dVal);
+//					dVal = Double.Parse(m.Groups[2].ToString(), System.Globalization.CultureInfo.InvariantCulture);
+//					ValueOpen.Add(dVal);
 
-	//				dVal = Double.Parse(m.Groups[3].ToString(), System.Globalization.CultureInfo.InvariantCulture);
-	//				ValueHigh.Add(dVal);
+//					dVal = Double.Parse(m.Groups[3].ToString(), System.Globalization.CultureInfo.InvariantCulture);
+//					ValueHigh.Add(dVal);
 
-	//				dVal = Double.Parse(m.Groups[4].ToString(), System.Globalization.CultureInfo.InvariantCulture);
-	//				ValueLow.Add(dVal);
-	//			}
-	//			catch (Exception e)
-	//			{
-	//				API.Log(API.LogType.Debug, "StockQuotes.dll: Parser exception: " + e.Message);
-	//				ValueClose.Clear();
-	//				ValueOpen.Clear();
-	//				ValueHigh.Clear();
-	//				ValueLow.Clear();
-	//				return false;
-	//			}
-	//		}
-	//		if (ValueClose.Capacity == 0)
-	//		{
-	//			API.Log(API.LogType.Debug, "StockQuotes.dll: Parser cant find matches");
-	//			return false;
-	//		}
-	//		return true;
-	//	}
-	//}
+//					dVal = Double.Parse(m.Groups[4].ToString(), System.Globalization.CultureInfo.InvariantCulture);
+//					ValueLow.Add(dVal);
+//				}
+//				catch (Exception e)
+//				{
+//					API.Log(API.LogType.Debug, "StockQuotes.dll: Parser exception: " + e.Message);
+//					ValueClose.Clear();
+//					ValueOpen.Clear();
+//					ValueHigh.Clear();
+//					ValueLow.Clear();
+//					return false;
+//				}
+//			}
+//			if (ValueClose.Capacity == 0)
+//			{
+//				API.Log(API.LogType.Debug, "StockQuotes.dll: Parser cant find matches");
+//				return false;
+//			}
+//			return true;
+//		}
+//	}
 
-	//internal class StockYahoo : Stock
-	//{
-	//	internal StockYahoo(string ticker)
-	//	{
+//	internal class StockYahoo : Stock
+//	{
+//		internal StockYahoo(string ticker)
+//		{
 
-	//	}
+//		}
 
-	//	internal override string BuildUrl()
-	//	{
-	//		string result = "http://ichart.yahoo.com/table.csv?s=" +
-	//						Ticker +
-	//						"&a=" + (FromMonth - 1) + "&b=" + FromDay + "&c=" + FromYear +
-	//						"&d=" + (ToMonth - 1) + "&e=" + ToDay + "&f=" + ToYear +
-	//						"&g=d&ignore=.csv";
-	//		return result;
-	//	}
-	//}
+//		internal override string BuildUrl()
+//		{
+//			string result = "http://ichart.yahoo.com/table.csv?s=" +
+//							Ticker +
+//							"&a=" + (FromMonth - 1) + "&b=" + FromDay + "&c=" + FromYear +
+//							"&d=" + (ToMonth - 1) + "&e=" + ToDay + "&f=" + ToYear +
+//							"&g=d&ignore=.csv";
+//			return result;
+//		}
+//	}
 
 	internal class Measure
 	{
@@ -315,10 +313,10 @@ namespace StockQuotes
 			API.Log(API.LogType.Debug, "StockQuotes.dll: Name: " + Name);
 #endif
 			string colorHigh, colorLow, colorBorder, colorBackground;
-			colorBorder = api.ReadString("ColorBorder", "0,0,0,0");
-			colorHigh = api.ReadString("ColorHigh", "255,255,255,0");
-			colorLow = api.ReadString("ColorLow", colorBorder);
-			colorBackground = api.ReadString("ColorSolid", "0,0,0,255");
+			colorBorder = api.ReadString("ColorBorder", "0,0,0,255");
+			colorHigh = api.ReadString("ColorHigh", "255,255,255,255");
+			colorLow = api.ReadString("ColorLow", "0,0,0,255");
+			colorBackground = api.ReadString("ColorSolid", "255,255,255,25");
 
 			ColorBorder = ColorFromRGBA(colorBorder);
 			if (ColorBorder == Color.Empty) ColorBorder = Color.FromArgb(0, 0, 0, 0);
@@ -696,6 +694,7 @@ namespace StockQuotes
 				{
 					API.Log(API.LogType.Error, "StockQuotes.dll: WebClient exception: " + e.Message);
 				}
+#if DEBUG
 				finally
 				{
 					// save downloaded data to txt
@@ -706,6 +705,7 @@ namespace StockQuotes
 						fs.Write(buffer, 0, buffer.Length);
 					}
 				}
+#endif
 			}
 			return result;
 		}
